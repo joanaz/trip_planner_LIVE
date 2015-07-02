@@ -2,11 +2,25 @@ function Selections() {
 	this.hotel = []
 	this.restaurant = []
 	this.thing = []
+	this.markers = []
 }
-
 
 var days = [new Selections()];
 var currentDay = 0;
+
+var database = {
+	'hotel': all_hotels,
+	'restaurant': all_restaurants,
+	'thing': all_things_to_do
+}
+
+
+var icons = {
+	'hotel': '/images/lodging_0star.png',
+	'restaurant': '/images/restaurant.png',
+	'thing': '/images/star-3.png'
+}
+
 
 $(document).ready(function() {
 	selectDay(0);
@@ -14,7 +28,6 @@ $(document).ready(function() {
 
 	var arrChoices = ['hotel', 'restaurant', 'thing'];
 	arrChoices.forEach(function(str) {
-		//dropDownChoice(str);
 		addToSelections(str);
 	})
 	deleteDay()
@@ -22,13 +35,14 @@ $(document).ready(function() {
 
 function currentDayDisplay(day) {
 	Object.keys(days[day]).forEach(function(str) {
-		$('#' + str + 'Chosen').empty();
-
-		days[day][str].forEach(function(element, id) {
-			$('#' + str + 'Chosen').append("<div class='itinerary-item'><span class='title'>" + element + "</span><button id='" + str + id + "' class='btn btn-xs btn-danger remove btn-circle spin'>x</button></div>")
-			deleteFromSelections(id, str);
+			$('#' + str + 'Chosen').empty();
+			clearMarkers();
+			days[day][str].forEach(function(element, id) {
+				$('#' + str + 'Chosen').append("<div class='itinerary-item'><span class='title'>" + element + "</span><button id='" + str + id + "' class='btn btn-xs btn-danger remove btn-circle spin'>x</button></div>")
+				deleteFromSelections(id, str);
+			})
 		})
-	})
+		// setAllMap(days[day].markers)
 }
 
 function displayLatestSelection(str) {
@@ -59,9 +73,19 @@ function addDay() {
 			$('#' + str + 'Chosen').empty();
 		})
 		$('#day-title-text').text("Day " + (currentDay + 1));
+		clearMarkers();
 	})
 }
 
+// function setAllMap(markers) {
+// 	for (var i = 0; i < days[currentDay].markers.length; i++) {
+// 		days[currentDay].markers[i].setMap(map);
+// 	}
+// }
+
+// function clearMarkers() {
+// 	setAllMap(null);
+// }
 function deleteDay() {
 	$('#delete-day').on('click', function() {
 		if (currentDay !== 0) {
@@ -73,7 +97,6 @@ function deleteDay() {
 
 		if (currentDay === days.length && days.length > 0) {
 			currentDay--
-			console.log(currentDay)
 		}
 
 		$('#day' + currentDay).addClass('current-day');
@@ -87,14 +110,27 @@ function addToSelections(str) {
 	$('#' + str + 'Plus').on('click', function() {
 		var e = document.getElementById(str + 'Select');
 		var selectedStr = e.options[e.selectedIndex].value;
-		console.log(days)
-		console.log(Object.keys(days[0]))
 		if (days[currentDay][str].indexOf(selectedStr) === -1) {
 			days[currentDay][str].push(selectedStr);
 			displayLatestSelection(str);
+
+			var interestObj = database[str].filter(function(interest) {
+				return interest.name === selectedStr
+			})
+			var location = interestObj[0].place[0].location
+
+			days[currentDay].markers.push({
+				'location': location,
+				'icon': icons[str]
+			})
+
+			drawLocation(location, {
+				icon: icons[str]
+			});
 		}
 	})
 }
+
 
 
 function deleteFromSelections(id, str) {
