@@ -2,7 +2,7 @@ function Selections() {
 	this.hotel = []
 	this.restaurant = []
 	this.thing = []
-	this.markers = []
+	this.markers = {};
 }
 
 var days = [new Selections()];
@@ -14,13 +14,11 @@ var database = {
 	'thing': all_things_to_do
 }
 
-
 var icons = {
 	'hotel': '/images/lodging_0star.png',
 	'restaurant': '/images/restaurant.png',
 	'thing': '/images/star-3.png'
 }
-
 
 $(document).ready(function() {
 	selectDay(0);
@@ -34,15 +32,34 @@ $(document).ready(function() {
 });
 
 function currentDayDisplay(day) {
+	for (var i = 0; i < days.length; i++) {
+		clearMap(days[i].markers);
+	}
+
 	Object.keys(days[day]).forEach(function(str) {
-			$('#' + str + 'Chosen').empty();
-			clearMarkers();
-			days[day][str].forEach(function(element, id) {
+		$('#' + str + 'Chosen').empty();
+		var interests = days[currentDay][str];
+
+		if (interests.length) {
+			interests.forEach(function(element, id) {
 				$('#' + str + 'Chosen').append("<div class='itinerary-item'><span class='title'>" + element + "</span><button id='" + str + id + "' class='btn btn-xs btn-danger remove btn-circle spin'>x</button></div>")
 				deleteFromSelections(id, str);
+
+				if (days[currentDay][str].indexOf(element) > -1) {
+					var interestObj = database[str].filter(function(interest) {
+						return interest.name === element;
+					})
+					var location = interestObj[0].place[0].location
+					drawLocation(location, {
+						icon: icons[str],
+						animation: google.maps.Animation.DROP
+					}, days[currentDay].markers, element);
+					// autoZoom();
+				}
+
 			})
-		})
-		// setAllMap(days[day].markers)
+		}
+	})
 }
 
 function displayLatestSelection(str) {
@@ -54,11 +71,11 @@ function displayLatestSelection(str) {
 
 function selectDay(day) {
 	$('#day' + day).on('click', function() {
-		currentDay = day
+		currentDay = day;
 		$('.current-day').removeClass('current-day');
 		$(this).addClass('current-day');
-		currentDayDisplay(day);
 		$('#day-title-text').text("Day " + (currentDay + 1));
+		currentDayDisplay(day);
 	})
 }
 
@@ -66,26 +83,18 @@ function addDay() {
 	$('#addDay').on('click', function() {
 		days.push(new Selections());
 		$('.current-day').removeClass('current-day');
+		clearMap(days[currentDay].markers); // removes all icons from map
 		currentDay = days.length - 1
 		$('<button id="day' + currentDay + '" class="btn btn-circle day-btn current-day spin">' + days.length + '</button>').insertBefore('#addDay')
 		selectDay(currentDay);
+		currentDayDisplay(currentDay);
 		Object.keys(days[currentDay]).forEach(function(str) {
 			$('#' + str + 'Chosen').empty();
 		})
 		$('#day-title-text').text("Day " + (currentDay + 1));
-		clearMarkers();
 	})
 }
 
-// function setAllMap(markers) {
-// 	for (var i = 0; i < days[currentDay].markers.length; i++) {
-// 		days[currentDay].markers[i].setMap(map);
-// 	}
-// }
-
-// function clearMarkers() {
-// 	setAllMap(null);
-// }
 function deleteDay() {
 	$('#delete-day').on('click', function() {
 		if (currentDay !== 0) {
@@ -115,27 +124,25 @@ function addToSelections(str) {
 			displayLatestSelection(str);
 
 			var interestObj = database[str].filter(function(interest) {
-				return interest.name === selectedStr
+				return interest.name === selectedStr;
 			})
 			var location = interestObj[0].place[0].location
-
-			days[currentDay].markers.push({
-				'location': location,
-				'icon': icons[str]
-			})
-
 			drawLocation(location, {
-				icon: icons[str]
-			});
+				icon: icons[str],
+				animation: google.maps.Animation.DROP
+			}, days[currentDay].markers, selectedStr);
+			// autoZoom();
 		}
 	})
 }
 
-
-
 function deleteFromSelections(id, str) {
 	$('#' + str + id).on('click', function() {
 		$(this).parent().remove();
-		days[currentDay][str].splice(id, 1);
+		var locationName = days[currentDay][str][id];
+		var marker = days[currentDay].markers[locationName];
+		marker.setMap(null); // remove marker from map
+		days[currentDay][str].splice(id, 1); // delete marker from Selections object
+		//days[currentDay].markers.splice(, 1); // delete marker from Selections object
 	})
 }

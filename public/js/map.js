@@ -1,23 +1,50 @@
 var map;
 
-function drawLocation(location, opts) {
+// var latlng = [];
+// var latlngbounds = new google.maps.LatLngBounds();
+
+// creating autozoom effect
+// var latlng = [
+// 	new google.maps.LatLng(1.23, 4.56),
+// 	new google.maps.LatLng(7.89, 1.01),
+// 	// ...
+// ];
+// var latlngbounds = new google.maps.LatLngBounds();
+// for (var i = 0; i < latlng.length; i++) {
+// 	latlngbounds.extend(latlng[i]);
+// }
+// map.fitBounds(latlngbounds);
+
+// function autoZoom() {
+// 	for (var i = 0; i < latlng.length; i++) {
+// 		latlngbounds.extend(latlng[i]);
+// 	}
+// 	map.fitBounds(latlngbounds);
+// }
+
+function drawLocation(location, opts, markersObj, locationName) {
 	if (typeof opts !== 'object') {
 		opts = {}
 	}
 	opts.position = new google.maps.LatLng(location[0], location[1]);
+	// latlng.push(opts.position); // creating autozoom effect
 	opts.map = map;
 	var marker = new google.maps.Marker(opts);
 
-	// markers.push(marker);
+	markersObj[locationName] = marker;
 }
 
-// function addMarker(location, icon) {
-// 	opts.position = new google.maps.LatLng(location[0], location[1]);
-// 	opts.map = map;
-// 	opts.icon = icon;
-// 	var marker = new google.maps.Marker(opts);
+function displayMap(map, markersObj) {
+	for (var marker in markersObj) {
+		markersObj[marker].setMap(map);
+	}
+}
 
-// }
+function clearMap(markersObj) {
+	for (var marker in markersObj) {
+		markersObj[marker].setMap(null);
+	}
+}
 
 function initialize_gmaps() {
 	// initialize new google maps LatLng object
@@ -39,17 +66,6 @@ function initialize_gmaps() {
 		title: "Hello World!"
 	});
 }
-
-function setAllMap(markers) {
-	for (var i = 0; i < markers.length; i++) {
-		markers[i].setMap(map);
-	}
-}
-
-function clearMarkers() {
-	setAllMap(null);
-}
-
 
 $(document).ready(function() {
 	initialize_gmaps();
