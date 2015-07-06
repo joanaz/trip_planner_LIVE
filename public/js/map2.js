@@ -1,12 +1,12 @@
 var map;
 
-// function Markers() {
-// 	this.hotel = []
-// 	this.restaurant = []
-// 	this.thing = []
-// }
+function Markers() {
+	this.hotel = []
+	this.restaurant = []
+	this.thing = []
+}
 
-// var markerDays = [new Markers()];
+var markerDays = [new Markers()];
 
 // var latlng = [];
 // var latlngbounds = new google.maps.LatLngBounds();
@@ -30,7 +30,7 @@ var map;
 // 	map.fitBounds(latlngbounds);
 // }
 
-function drawLocation(location, opts, markersObj, locationName) {
+function drawLocation(location, opts, str, currentDay) {
 	if (typeof opts !== 'object') {
 		opts = {}
 	}
@@ -38,19 +38,58 @@ function drawLocation(location, opts, markersObj, locationName) {
 	// latlng.push(opts.position); // creating autozoom effect
 	opts.map = map;
 	var marker = new google.maps.Marker(opts);
-
-	markersObj[locationName] = marker;
-}
-
-function displayMap(map, markersObj) {
-	for (var marker in markersObj) {
-		markersObj[marker].setMap(map);
+	if (str === 'hotel') {
+		markerDays[currentDay][str][0] = marker
+	} else {
+		markerDays[currentDay][str].push(marker);
 	}
 }
 
-function clearMap(markersObj) {
-	for (var marker in markersObj) {
-		markersObj[marker].setMap(null);
+// function addMarker(currentDay, str) {
+// 	if (str === 'hotel') {
+// 		markerDays[currentDay][str][0] = marker
+// 	} else {
+// 		markerDays[currentDay][str].push(marker);
+// 	}
+// }
+
+function addDayMarkers() {
+	markerDays.push(new Markers());
+}
+
+function deleteMarker(str, currentDay, id) {
+	var marker = markerDays[currentDay][str][id]
+	if (marker) {
+		marker.setMap(null);
+		markerDays[currentDay][str][id] = null; //.splice(id, 1);
+	}
+}
+
+function deleteDayMarkers(currentDay) {
+	clearMap(currentDay)
+	markerDays.splice(currentDay, 1);
+}
+
+function displayMap(currentDay) {
+	for (var str in markerDays[currentDay]) {
+
+		markerDays[currentDay][str].forEach(function(marker) {
+			if (marker) {
+				marker.animation = google.maps.Animation.DROP;
+				marker.setMap(map);
+			}
+
+		})
+	}
+}
+
+function clearMap(currentDay) {
+	for (var str in markerDays[currentDay]) {
+
+		markerDays[currentDay][str].forEach(function(marker) {
+			if (marker)
+				marker.setMap(null);
+		})
 	}
 }
 
