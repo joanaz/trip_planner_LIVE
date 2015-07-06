@@ -2,6 +2,6 @@
 
 npm install<br>
 bower install<br>
-mongod
-node seed.js
-npm start
+mongod<br>
+node seed.js<br>
+npm start<br>
