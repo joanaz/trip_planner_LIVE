@@ -1,7 +1,7 @@
 # trip_planner_LIVE
 
-npm install
-bower install
+npm install'\n'
+bower install'\n'
 mongod
 node seed.js
 npm start
